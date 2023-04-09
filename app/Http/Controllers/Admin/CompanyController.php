@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+
 use Illuminate\Http\Request;
 use App\Models\Company;
 
@@ -10,65 +11,73 @@ class CompanyController extends Controller
 {
     public function index(){
         $company = Company::all();
-        return view('admin.company.index',['companies'=>$company]);
+        return view('admin.company.list',['companies'=>$company]);
     }
+        
 
     public function new(){
         return view('admin.company.new');
     }
 
-    public function store(Request $request){
+       /**
+      * Save Function
+      */
+
+    public function save(Request $request){
         $company = new Company();
-        $company->company_name = $request->get('company_name');
-        $company->address = $request->get('address');
+        $company->name = $request->get('name');
         $company->email = $request->get('email');
         $company->contact_no = $request->get('contact_no');
         $company->registration_no = $request->get('registration_no');
+        $company->status = $request->get('status');
         $company->save();
-        return redirect()->route('pharmacy.admin.company.index')->with("message","New Company Created");
+        return redirect()->back();
     }
 
+       /**
+      * View details
+      */
+    public function details($id){
+        $company = Company::findOrFail($id);
+        return view('admin.company.detail',['company'=>$company]);
+    }
+
+       /**
+      * View edit
+      */
+
     public function edit($id){
-        $company = Company::find($id);
+        $company = Company::findOrFail($id);
         return view('admin.company.edit',['company'=>$company]);
     }
 
     public function update(Request $request, $id){
-        $company = Company::find($id);
-        $company->company_name = $request->get('company_name');
-        $company->address = $request->get('address');
+        $company = Company::findOrFail($id);
+        $company->name = $request->get('name');
         $company->email = $request->get('email');
         $company->contact_no = $request->get('contact_no');
         $company->registration_no = $request->get('registration_no');
-        if($company->isDirty()){
-            $company->save();
-            return redirect()->route('pharmacy.admin.company.index')->with("message","Company Details Updated");
-        }else{
-            return redirect()->route('pharmacy.admin.company.index')->with("message","No changes Made");
-        }
-        
+        $company->status = $request->get('status');
+        $company->save();
+        return redirect()->back();
     }
 
     public function remove($id){
-        $company = Company::find($id);
+        $company = Company::findOrFail($id);
         $company->delete();
-        return redirect()->route('pharmacy.admin.company.index')->with("message","Company Removed");
+        return redirect()->back();
     }
-
     public function trash(){
         $company = Company::onlyTrashed()->get();
         return view('admin.company.trash',['companies'=>$company]);
     }
-
     public function restore($id){
-        $company = Company::withTrashed()->find($id);
+        $company = Company::withTrashed()->findOrFail($id);
         $company->restore();
-        return redirect()->route('pharmacy.admin.company.trash')->with("message","Company Restored");
+        return redirect()->back();
     }
 
-    public function delete($id){
-        $company = Company::withTrashed()->find($id);
-        $company->forceDelete();
-        return redirect()->route('pharmacy.admin.company.trash')->with("message","Company Deleted Permanently");
-    }
+
 }
+
+
